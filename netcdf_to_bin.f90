@@ -78,8 +78,6 @@ program netcdf_to_binary
     close(101, iostat = bin_iostat, iomsg = bin_iomsg)
     if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
 
-    call exit(2)
-
 end program
 
 function d2s(in_var) result(out_var)
