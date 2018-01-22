@@ -71,14 +71,6 @@ failed_tests=$((failed_tests+$?))
 total_tests=$((total_tests+1))
 
 echo "-------------------------"
-echo "Test write error"
-expected_error_code=${err_writing_bin}
-./netcdf_to_bin ${in_file_name} ${parameter_name} ${date_time} ${out_path}
-assertEquals ${expected_error_code} $?
-failed_tests=$((failed_tests+$?))
-total_tests=$((total_tests+1))
-
-echo "-------------------------"
 echo "Test all ok"
 expected_error_code=${ok_status}
 ./netcdf_to_bin ${in_file_name} ${parameter_name} ${date_time} ${out_path}
