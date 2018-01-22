@@ -70,12 +70,16 @@ program netcdf_to_binary
     //d2s(dims(1))//'_'//d2s(dims(2))//'_'//d2s(dims(3))//'_'//d2s(dims(4))//'.ieeer8'
 
     open(101, file = trim(out_f_name), access = 'direct', status = 'replace', &
-        form = 'unformatted', &
+        iostat = bin_iostat, iomsg = bin_iomsg, form = 'unformatted', &
         convert = 'big_endian', recl = dims(1)*dims(2)*dims(3)*dims(4)*8)
-    write(101, rec = 1) input_var
-    close(101)
+    if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
+    write(101, rec = 1, iostat = bin_iostat, iomsg = bin_iomsg) input_var
+    if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
+    close(101, iostat = bin_iostat, iomsg = bin_iomsg)
+    if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
 
     call exit(2)
+
 end program
 
 function d2s(in_var) result(out_var)
