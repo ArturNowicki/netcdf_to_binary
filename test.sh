@@ -21,11 +21,11 @@ failed_tests=0
 
 date_time='2018_01_01_46800'
 in_file_name='hydro.pop.h.2018-01-01-46800.nc'
-parameter_name='ULAT'
+parameter_name='TEMP'
 out_path='out_data/'
 
 echo "Compile program."
-gfortran error_codes.f90 -I/opt/local/include netcdf_to_bin.f90 -o netcdf_to_bin -L/opt/local/lib -lnetcdff -lnetcdf
+gfortran messages.f90 error_codes.f90 -I/opt/local/include netcdf_to_bin.f90 -o netcdf_to_bin -L/opt/local/lib -lnetcdff -lnetcdf
 if [[ $? -ne 0 ]]; then
 	exit
 fi

@@ -13,10 +13,10 @@ program netcdf_to_binary
 
     use netcdf
     use error_codes
+    use messages
+
     implicit none
 
-    character(len=256), parameter :: params_err_msg = "Wrong/missing input marameters"
-    character(len=256), parameter :: memory_alloc_err_msg = "Not enough memory"
     integer, parameter :: dp = selected_real_kind(15, 307)
     integer, parameter :: max_var_dims = 4
 
@@ -28,40 +28,26 @@ program netcdf_to_binary
     integer :: ii
     ! netcdf variable info
     integer :: ncid, status, bin_iostat
-    integer :: varid, xtype, ndims, nAtts
+    integer :: varid, ndims
     integer :: dim_len
-    integer, dimension(:), allocatable :: dimids
     integer, dimension(max_var_dims) :: dims
     ! input data
     real(kind = dp), dimension(:, :, :, :), allocatable :: input_var
 
 
     call read_input_data(f_name, var_name, fname_prefix, out_path, status)
-    if(status .eq. -1) call handle_error(params_err_msg, err_missing_program_input)
+    if(status .eq. -1) call handle_error(input_params_err_msg, err_missing_program_input)
 
-    status = nf90_open(trim(f_name), NF90_NOWRITE, ncid)
+    status = nf90_open(trim(f_name), nf90_nowrite, ncid)
     if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_open_file)
 
     status = nf90_inq_varid(ncid, var_name, varid)
     if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
 
-    status = nf90_inquire_variable(ncid, varid, ndims = ndims)
-    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
+    call get_var_dims(ncid, varid, dims)
 
-    allocate(dimids(ndims), STAT = status)
-    if(status .ne. 0) call handle_error(memory_alloc_err_msg, err_memory_alloc)
-
-    status = nf90_inquire_variable(ncid, varid, dimids = dimids)
-    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
-
-    dims = 1
-    do ii = 1, ndims
-        status = nf90_inquire_dimension(ncid, dimids(ii), len = dim_len)
-        if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
-        dims(ii) = dim_len
-    enddo
     allocate(input_var(dims(1), dims(2), dims(3), dims(4)), STAT = status)
-    if(status .ne. 0) call handle_error(memory_alloc_err_msg, err_memory_alloc)
+    if(status .ne. 0) call handle_error(msg_memory_alloc_err, err_memory_alloc)
 
     status = nf90_get_var(ncid, varid, input_var)
     if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
@@ -75,10 +61,45 @@ program netcdf_to_binary
     if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
     write(101, rec = 1, iostat = bin_iostat, iomsg = bin_iomsg) input_var
     if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
+    deallocate(input_var, STAT = status)
+    if(status .ne. 0) call handle_error(msg_memory_dealloc_err, err_memory_alloc)
     close(101, iostat = bin_iostat, iomsg = bin_iomsg)
     if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
 
 end program
+
+subroutine get_var_dims(ncid, varid, var_dims)
+    use netcdf
+    use error_codes
+    use messages
+
+    implicit none
+    integer, parameter :: max_var_dims = 4
+
+    integer, intent(in) :: ncid, varid
+    integer :: status, ndims, ii, dim_len
+    integer, dimension(:), allocatable :: dimids
+    integer, intent(out), dimension(max_var_dims) :: var_dims
+
+    status = nf90_inquire_variable(ncid, varid, ndims = ndims)
+    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
+
+    allocate(dimids(ndims), STAT = status)
+    if(status .ne. 0) call handle_error(msg_memory_alloc_err, err_memory_alloc)
+
+    status = nf90_inquire_variable(ncid, varid, dimids = dimids)
+    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
+
+    var_dims = 1
+    do ii = 1, ndims
+        status = nf90_inquire_dimension(ncid, dimids(ii), len = dim_len)
+        if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
+        var_dims(ii) = dim_len
+    enddo
+    deallocate(dimids, STAT = status)
+    if(status .ne. 0) call handle_error(msg_memory_dealloc_err, err_memory_alloc)
+
+end subroutine
 
 function d2s(in_var) result(out_var)
     implicit none
