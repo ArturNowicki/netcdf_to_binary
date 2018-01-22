@@ -21,7 +21,7 @@ failed_tests=0
 
 date_time='2018_01_01_46800'
 in_file_name='hydro.pop.h.2018-01-01-46800.nc'
-parameter_name='TEMP'
+parameter_name='ULAT'
 out_path='out_data/'
 
 echo "Compile program."
@@ -64,7 +64,7 @@ total_tests=$((total_tests+1))
 
 echo "-------------------------"
 echo "Test bad out path"
-expected_error_code=${err_nc_reading}
+expected_error_code=${err_writing_bin}
 ./netcdf_to_bin ${in_file_name} ${parameter_name} ${date_time} "bad_path/"
 assertEquals ${expected_error_code} $?
 failed_tests=$((failed_tests+$?))

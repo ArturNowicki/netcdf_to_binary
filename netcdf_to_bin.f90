@@ -23,11 +23,11 @@ program netcdf_to_binary
     character(len=4) :: d2s
     ! input and output parameters
     character(len=nf90_max_name) :: f_name, var_name, fname_prefix
-    character(len=nf90_max_name) :: out_path, out_f_name
+    character(len=nf90_max_name) :: out_path, out_f_name, bin_iomsg
     ! increment
     integer :: ii
     ! netcdf variable info
-    integer :: ncid, status
+    integer :: ncid, status, bin_iostat
     integer :: varid, xtype, ndims, nAtts
     integer :: dim_len
     integer, dimension(:), allocatable :: dimids
@@ -68,9 +68,13 @@ program netcdf_to_binary
 
     out_f_name = trim(out_path)//trim(fname_prefix)//'_'//trim(var_name)//'_' &
     //d2s(dims(1))//'_'//d2s(dims(2))//'_'//d2s(dims(3))//'_'//d2s(dims(4))//'.ieeer8'
-    call write_variable(out_path)
-    write(*,*) '--------'
-    write(*,*) trim(out_f_name)
+
+    open(101, file = trim(out_f_name), access = 'direct', status = 'replace', &
+        form = 'unformatted', &
+        convert = 'big_endian', recl = dims(1)*dims(2)*dims(3)*dims(4)*8)
+    write(101, rec = 1) input_var
+    close(101)
+
     call exit(2)
 end program
 
