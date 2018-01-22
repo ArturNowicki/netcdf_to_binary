@@ -1,5 +1,16 @@
 program netcdf_to_binary
 
+! Created by Artur Nowicki 11.01.2018
+! This program reads data from particular netcdf variable and writes it to a binary file
+! Resulting file name contains variable dimensions
+! This version works for up to 4 dimensions
+! In case of dim < 4 size(dim) = 1
+! Input parameters:
+! f_name - input netcdf file name
+! var_name - extracted variable name
+! fname_prefix - prefix for file name (e.g. datetime, series name etc.)
+! out_path - output file location
+
     use netcdf
     use error_codes
     implicit none
@@ -11,7 +22,7 @@ program netcdf_to_binary
 
     character(len=4) :: d2s
     ! input and output parameters
-    character(len=nf90_max_name) :: f_name, var_name, date_time
+    character(len=nf90_max_name) :: f_name, var_name, fname_prefix
     character(len=nf90_max_name) :: out_path, out_f_name
     ! increment
     integer :: ii
@@ -25,7 +36,7 @@ program netcdf_to_binary
     real(kind = dp), dimension(:, :, :, :), allocatable :: input_var
 
 
-    call read_input_data(f_name, var_name, date_time, out_path, status)
+    call read_input_data(f_name, var_name, fname_prefix, out_path, status)
     if(status .eq. -1) call handle_error(params_err_msg, err_missing_program_input)
 
     status = nf90_open(trim(f_name), NF90_NOWRITE, ncid)
@@ -55,7 +66,7 @@ program netcdf_to_binary
     status = nf90_get_var(ncid, varid, input_var)
     if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
 
-    out_f_name = trim(out_path)//trim(date_time)//'_'//trim(var_name)//'_' &
+    out_f_name = trim(out_path)//trim(fname_prefix)//'_'//trim(var_name)//'_' &
     //d2s(dims(1))//'_'//d2s(dims(2))//'_'//d2s(dims(3))//'_'//d2s(dims(4))//'.ieeer8'
     call write_variable(out_path)
     write(*,*) '--------'
@@ -70,14 +81,14 @@ function d2s(in_var) result(out_var)
     write(out_var, '(i4.4)') in_var
 end function
 
-subroutine read_input_data(file_name, variable_name, date_time, output_path, status)
+subroutine read_input_data(file_name, variable_name, fname_prefix, output_path, status)
     implicit none
-    character(len=256), intent(out) :: file_name, variable_name, date_time, output_path
+    character(len=256), intent(out) :: file_name, variable_name, fname_prefix, output_path
     integer, intent(out) :: status
     status = 0
     call getarg(1, file_name)
     call getarg(2, variable_name)
-    call getarg(3, date_time)
+    call getarg(3, fname_prefix)
     call getarg(4, output_path)
     if(file_name == '' .or. variable_name == '' .or. output_path == '') status = -1
 end subroutine
