@@ -36,17 +36,16 @@ subroutine netcdf_to_binary(f_name, var_name, out_name_prefix, out_path)
     integer, parameter :: dp = selected_real_kind(15, 307)
     integer, parameter :: max_var_dims = 4
 
-    character(len=4) :: d2s
+    character(len=4) d2s
     ! input and output parameters
     character(len=nf90_max_name) :: f_name, var_name, out_name_prefix
     character(len=nf90_max_name) :: out_path, out_f_name, bin_iomsg
     ! increment
-    integer :: ii
+    integer ii
     ! netcdf variable info
-    integer :: ncid, status, bin_iostat
-    integer :: varid, ndims
-    integer :: dim_len
     integer, dimension(max_var_dims) :: dims
+    integer ncid, status, bin_iostat
+    integer varid, ndims, dim_len
     ! input data
     real(kind = dp), dimension(:, :, :, :), allocatable :: input_var
 
@@ -91,7 +90,7 @@ subroutine get_var_dims(ncid, varid, var_dims)
     integer, parameter :: max_var_dims = 4
 
     integer, intent(in) :: ncid, varid
-    integer :: status, ndims, ii, dim_len
+    integer status, ndims, ii, dim_len
     integer, dimension(:), allocatable :: dimids
     integer, intent(out), dimension(max_var_dims) :: var_dims
 
@@ -118,7 +117,7 @@ end subroutine
 function d2s(in_var) result(out_var)
     implicit none
     integer, intent(in) :: in_var
-    character(len=*) :: out_var
+    character(len=*) out_var
     write(out_var, '(i4.4)') in_var
 end function
 
@@ -132,16 +131,6 @@ subroutine read_input_data(file_name, variable_name, out_name_prefix, output_pat
     call getarg(3, out_name_prefix)
     call getarg(4, output_path)
     if(file_name == '' .or. variable_name == '' .or. output_path == '') status = -1
-end subroutine
-
-! subroutine get_var_info(ncid, variable_name)
-!     implicit none
-! end subroutine
-
-subroutine write_variable(out_path)
-    implicit none
-    character(len=*) out_path
-
 end subroutine
 
 subroutine handle_error(message, status)
