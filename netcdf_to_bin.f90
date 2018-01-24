@@ -1,9 +1,20 @@
 program main
-    call netcdf_to_binary
-    
+    use netcdf
+    use error_codes
+    use messages
+
+    implicit none
+
+    character(len=nf90_max_name) :: f_name, var_name, out_name_prefix, out_path
+    integer status
+
+    call read_input_data(f_name, var_name, out_name_prefix, out_path, status)
+    if(status .eq. -1) call handle_error(input_params_err_msg, err_missing_program_input)
+    call netcdf_to_binary(f_name, var_name, out_name_prefix, out_path)
+
 end program
 
-subroutine netcdf_to_binary
+subroutine netcdf_to_binary(f_name, var_name, out_name_prefix, out_path)
 
 ! Created by Artur Nowicki 11.01.2018
 ! This program reads data from particular netcdf variable and writes it to a binary file
@@ -13,7 +24,7 @@ subroutine netcdf_to_binary
 ! Input parameters:
 ! f_name - input netcdf file name
 ! var_name - extracted variable name
-! fname_prefix - prefix for file name (e.g. datetime, series name etc.)
+! out_name_prefix - prefix for file name (e.g. datetime, series name etc.)
 ! out_path - output file location
 
     use netcdf
@@ -27,7 +38,7 @@ subroutine netcdf_to_binary
 
     character(len=4) :: d2s
     ! input and output parameters
-    character(len=nf90_max_name) :: f_name, var_name, fname_prefix
+    character(len=nf90_max_name) :: f_name, var_name, out_name_prefix
     character(len=nf90_max_name) :: out_path, out_f_name, bin_iomsg
     ! increment
     integer :: ii
@@ -55,7 +66,7 @@ subroutine netcdf_to_binary
     status = nf90_get_var(ncid, varid, input_var)
     if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
 
-    out_f_name = trim(out_path)//trim(fname_prefix)//'_'//trim(var_name)//'_' &
+    out_f_name = trim(out_path)//trim(out_name_prefix)//'_'//trim(var_name)//'_' &
     //d2s(dims(1))//'_'//d2s(dims(2))//'_'//d2s(dims(3))//'_'//d2s(dims(4))//'.ieeer8'
 
     open(101, file = trim(out_f_name), access = 'direct', status = 'replace', &
@@ -111,14 +122,14 @@ function d2s(in_var) result(out_var)
     write(out_var, '(i4.4)') in_var
 end function
 
-subroutine read_input_data(file_name, variable_name, fname_prefix, output_path, status)
+subroutine read_input_data(file_name, variable_name, out_name_prefix, output_path, status)
     implicit none
-    character(len=256), intent(out) :: file_name, variable_name, fname_prefix, output_path
+    character(len=256), intent(out) :: file_name, variable_name, out_name_prefix, output_path
     integer, intent(out) :: status
     status = 0
     call getarg(1, file_name)
     call getarg(2, variable_name)
-    call getarg(3, fname_prefix)
+    call getarg(3, out_name_prefix)
     call getarg(4, output_path)
     if(file_name == '' .or. variable_name == '' .or. output_path == '') status = -1
 end subroutine
