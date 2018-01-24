@@ -1,4 +1,9 @@
-program netcdf_to_binary
+program main
+    call netcdf_to_binary
+    
+end program
+
+subroutine netcdf_to_binary
 
 ! Created by Artur Nowicki 11.01.2018
 ! This program reads data from particular netcdf variable and writes it to a binary file
@@ -35,8 +40,6 @@ program netcdf_to_binary
     real(kind = dp), dimension(:, :, :, :), allocatable :: input_var
 
 
-    call read_input_data(f_name, var_name, fname_prefix, out_path, status)
-    if(status .eq. -1) call handle_error(input_params_err_msg, err_missing_program_input)
 
     status = nf90_open(trim(f_name), nf90_nowrite, ncid)
     if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_open_file)
@@ -66,7 +69,7 @@ program netcdf_to_binary
     close(101, iostat = bin_iostat, iomsg = bin_iomsg)
     if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
 
-end program
+end subroutine
 
 subroutine get_var_dims(ncid, varid, var_dims)
     use netcdf
