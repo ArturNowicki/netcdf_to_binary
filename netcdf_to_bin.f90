@@ -50,7 +50,6 @@ subroutine netcdf_to_binary(f_name, var_name, out_name_prefix, out_path)
     real(kind = dp), dimension(:, :, :, :), allocatable :: input_var
 
 
-
     status = nf90_open(trim(f_name), nf90_nowrite, ncid)
     if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_open_file)
 
@@ -80,6 +79,7 @@ subroutine netcdf_to_binary(f_name, var_name, out_name_prefix, out_path)
     if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
 
 end subroutine
+
 
 subroutine get_var_dims(ncid, varid, var_dims)
     use netcdf
