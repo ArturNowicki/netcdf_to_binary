@@ -15,11 +15,13 @@ err_missing_program_input=103
 err_writing_bin=104
 err_memory_alloc=105
 
+parameters_list=( 'TEMP' 'SALT' 'UVEL' 'VVEL' 'SSH' )
+
 source ./assertions.sh
 total_tests=0
 failed_tests=0
 
-date_time='2018_01_01_46800'
+date_time='20180101-46800'
 in_file_name='hydro.pop.h.2018-01-01-46800.nc'
 parameter_name='TEMP'
 out_path='out_data/'
@@ -81,5 +83,18 @@ total_tests=$((total_tests+1))
 echo
 echo "-------------------------"
 echo "TESTING RESULTS:"
-echo "Tests passed: ${passed_tests}"
 echo "Tests failed: ${failed_tests} out of ${total_tests}"
+
+if [[ ${failed_tests} -ne 0 ]]; then
+	exit
+fi
+
+echo "-------------------------"
+echo "Start actual script:"
+
+for parameter_name in "${parameters_list[@]}"
+do
+	echo ${parameter_name}
+	./netcdf_to_bin ${in_file_name} ${parameter_name} ${date_time} ${out_path}
+done
+
