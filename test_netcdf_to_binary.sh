@@ -15,14 +15,14 @@ err_missing_program_input=103
 err_writing_bin=104
 err_memory_alloc=105
 
-parameters_list=( 'TEMP' 'SALT' 'UVEL' 'VVEL' 'SSH' )
+parameters_list=( 'TEMP' 'SALT' 'UVEL' 'VVEL' 'SSH')
 
 source ./assertions.sh
 total_tests=0
 failed_tests=0
 
 date_time='20180101-46800'
-in_file_name='hydro.pop.h.2018-01-01-46800.nc'
+in_file_name='../../data/boundary_conditions/tmp_in_data/hydro.pop.h.2018-01-01-46800.nc'
 parameter_name='TEMP'
 out_path='../../data/boundary_conditions/tmp_bin_data/'
 
