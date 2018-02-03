@@ -9,7 +9,7 @@ program main
     integer status
 
     call read_input_data(f_name, var_name, out_name_prefix, out_path, status)
-    if(status .eq. -1) call handle_error(input_params_err_msg, err_missing_program_input)
+    if(status .eq. -1) call handle_error(msg_missing_program_input_err, err_missing_program_input)
     call netcdf_to_binary(f_name, var_name, out_name_prefix, out_path)
 
 end program
@@ -51,10 +51,10 @@ subroutine netcdf_to_binary(f_name, var_name, out_name_prefix, out_path)
 
 
     status = nf90_open(trim(f_name), nf90_nowrite, ncid)
-    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_open_file)
+    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_f_open)
 
     status = nf90_inq_varid(ncid, var_name, varid)
-    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
+    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_f_read)
 
     call get_var_dims(ncid, varid, dims)
 
@@ -62,7 +62,7 @@ subroutine netcdf_to_binary(f_name, var_name, out_name_prefix, out_path)
     if(status .ne. 0) call handle_error(msg_memory_alloc_err, err_memory_alloc)
 
     status = nf90_get_var(ncid, varid, input_var)
-    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
+    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_f_read)
 
     out_f_name = trim(out_path)//trim(out_name_prefix)//'_'//trim(var_name)//'_' &
     //d2s(dims(1))//'_'//d2s(dims(2))//'_'//d2s(dims(3))//'_'//d2s(dims(4))//'.ieeer8'
@@ -70,13 +70,13 @@ subroutine netcdf_to_binary(f_name, var_name, out_name_prefix, out_path)
     open(101, file = trim(out_f_name), access = 'direct', status = 'replace', &
         iostat = bin_iostat, iomsg = bin_iomsg, form = 'unformatted', &
         convert = 'big_endian', recl = dims(1)*dims(2)*dims(3)*dims(4)*8)
-    if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
+    if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_f_write)
     write(101, rec = 1, iostat = bin_iostat, iomsg = bin_iomsg) input_var
-    if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
+    if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_f_write)
     deallocate(input_var, STAT = status)
     if(status .ne. 0) call handle_error(msg_memory_dealloc_err, err_memory_alloc)
     close(101, iostat = bin_iostat, iomsg = bin_iomsg)
-    if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_writing_bin)
+    if(bin_iostat .ne. 0) call handle_error(bin_iomsg, err_f_close)
 
 end subroutine
 
@@ -95,18 +95,18 @@ subroutine get_var_dims(ncid, varid, var_dims)
     integer, intent(out), dimension(max_var_dims) :: var_dims
 
     status = nf90_inquire_variable(ncid, varid, ndims = ndims)
-    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
+    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_f_read)
 
     allocate(dimids(ndims), STAT = status)
     if(status .ne. 0) call handle_error(msg_memory_alloc_err, err_memory_alloc)
 
     status = nf90_inquire_variable(ncid, varid, dimids = dimids)
-    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
+    if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_f_read)
 
     var_dims = 1
     do ii = 1, ndims
         status = nf90_inquire_dimension(ncid, dimids(ii), len = dim_len)
-        if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_nc_reading)
+        if(status .ne. nf90_noerr) call handle_error(nf90_strerror(status), err_f_read)
         var_dims(ii) = dim_len
     enddo
     deallocate(dimids, STAT = status)
