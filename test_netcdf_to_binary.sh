@@ -22,7 +22,7 @@ source ./../common_code/assertions.sh
 total_tests=0
 failed_tests=0
 
-date_time='20180101-46800'
+date_time='2018-01-01-46800'
 in_file_name='../../data/boundary_conditions/tmp_in_data/hydro.pop.h.2018-01-01-46800.nc'
 parameter_name='TEMP'
 out_path='../../data/boundary_conditions/tmp_bin_data/'
